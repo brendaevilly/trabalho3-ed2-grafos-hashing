@@ -1,18 +1,17 @@
-# Torre de Hanói
+# torre de hanói
 
 - 3 pinos
 - 4 discos
 
-## Problema proposto
+## problema proposto
 
-- Criar grafo usando matriz de adjacência
-- Encontrar menor caminho para o resultado final usando o
-Algoritmo de Dijskstra
-- Contabilizar o tempo gasto para encontrar a solução
+- criar grafo usando matriz de adjacência
+- encontrar menor caminho para o resultado final usando o
+algoritmo de dijskstra
+- contabilizar o tempo gasto para encontrar a solução
 
-## Representação
+## representação
 
-- **Discos e pinos correspondentes**
-    - vetor de inteiros de tamanho 4, com valores posívei (1 - pino 1; 2 - pino 2; 3 - pino 3)
-    - posicao 0: menor disco (topo); posicao 3: maior disco (base)
-    - número de configurações possíveis = 3^4 = 81 = número de vértices do grafo = número de linhas e colunas da matriz de adjacência
+- matriz com 3^4 posições = 81 posições = 81 configurações possíveis para a torre de hanói = 81 vértices no grafo
+- cada vértice, posição da matriz, vai ter uma configuração representada por um vetor de 4 posições
+    - indices = discos | valores de 0 à 2 = pinos
