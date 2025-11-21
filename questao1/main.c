@@ -1,13 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include "prototipos.h"
 
-#define DISCOS 4
-#define VERTICES 81
-
-// ========== Função principal ==========
 int main() {
     int grafo[VERTICES][VERTICES];
 

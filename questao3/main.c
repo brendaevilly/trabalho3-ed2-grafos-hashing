@@ -11,12 +11,7 @@ int main() {
     inicializarGrafo(grafo);
 
     char entrada[100];
-    printf("\n--- Planilha de Calculo Rudimentar ---\n");
-    printf("Colunas: A-H | Linhas: 1-20 | Total de %d celulas.\n", NUM_CELULAS);
-    printf("\nComandos:\n");
-    printf("  - Para inserir valor/formula: COORDENADA VALOR/FORMULA (ex: A1 10, B2 =A1, C3 @soma(A1..B2))\n");
-    printf("  - Para sair: sair\n");
-    
+    menu();
     exibePlanilha(planilha);
 
     int loop = 1;

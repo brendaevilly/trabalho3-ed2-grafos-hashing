@@ -1,7 +1,10 @@
 #ifndef PROTOTIPOS_H
 #define PROTOTIPOS_H
 
+#define DISCOS 4
 #define VERTICES 81
+#define INFINITO 9999
+#define PESO_ARESTA 1
 
 struct listaDeAdjacencia;
 typedef struct listaDeAdjacencia{

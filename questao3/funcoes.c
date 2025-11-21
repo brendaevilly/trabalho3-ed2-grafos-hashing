@@ -5,11 +5,14 @@
 #include <math.h>
 #include "prototipos.h"
 
-/**
- * @brief Inicializa a planilha com valores 0.0 e fórmulas vazias.
- * 
- * @param planilha A matriz de células da planilha.
- */
+void menu(){
+    printf("\n--- Planilha de Calculo Rudimentar ---\n");
+    printf("Colunas: A-H | Linhas: 1-20 | Total de %d celulas.\n", NUM_CELULAS);
+    printf("\nComandos:\n");
+    printf("  - Para inserir valor/formula: COORDENADA VALOR/FORMULA (ex: A1 10, B2 =A1, C3 @soma(A1..B2))\n");
+    printf("  - Para sair: sair\n");
+}
+
 void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
@@ -28,85 +31,55 @@ void inicializarGrafo(int grafo[NUM_CELULAS][NUM_CELULAS]) {
     }
 }
 
-/**
- * @brief Converte uma coordenada de célula (ex: "A1", "H20") para um índice linear (0 a NUM_CELULAS-1).
- * 
- * @param coordenada A string da coordenada da célula.
- * @return int O índice linear da célula, ou -1 se a coordenada for inválida.
- */
 int converteCoordenadaParaIndice(const char *coordenada) {
-    if (strlen(coordenada) < 2) return -1;
-
-    char colChar = toupper(coordenada[0]);
-    int coluna = colChar - 'A';
-    int linha = atoi(&coordenada[1]) - 1;
-
-    if (coluna < 0 || coluna >= COLUNAS || linha < 0 || linha >= LINHAS) {
-        return -1;
+    int valido = 0, linha, coluna;
+    if (strlen(coordenada) < 2) valido = -1;
+    else{
+        char colChar = toupper(coordenada[0]);
+        coluna = colChar - 'A';
+        linha = atoi(&coordenada[1]) - 1;
+        if (coluna < 0 || coluna >= COLUNAS || linha < 0 || linha >= LINHAS) valido = -1;
     }
 
-    return linha * COLUNAS + coluna;
+    return ((valido == 0) ? linha * COLUNAS + coluna : -1);
 }
 
-/**
- * @brief Converte um índice linear para uma coordenada de célula (ex: 0 -> "A1").
- * 
- * @param indice O índice linear da célula.
- * @param coordenada Buffer para armazenar a string da coordenada.
- */
 void converteIndiceParaCoordenada(int indice, char *coordenada) {
-    if (indice < 0 || indice >= NUM_CELULAS) {
-        sprintf(coordenada, "INVALIDO");
-        return;
+    if (indice < 0 || indice >= NUM_CELULAS) sprintf(coordenada, "INVALIDO");
+    else{
+        int linha = indice / COLUNAS;
+        int coluna = indice % COLUNAS;
+        sprintf(coordenada, "%c%d", 'A' + coluna, linha + 1);
     }
-    int linha = indice / COLUNAS;
-    int coluna = indice % COLUNAS;
-
-    sprintf(coordenada, "%c%d", 'A' + coluna, linha + 1);
+    
 }
 
-// =================================================================================================
-// Funções de Grafo e Busca
-// =================================================================================================
+int buscaCiclo(int indice, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
+    int cicloDetectado = 0;
+    int linha_indice = indice / COLUNAS;
+    int coluna_indice = indice % COLUNAS;
+    planilha[linha_indice][coluna_indice   ].visitado = 1;
 
-/**
- * @brief Realiza uma busca em profundidade (DFS) para detectar ciclos.
- * 
- * @param u O índice da célula atual.
- * @param planilha A matriz de células.
- * @param grafo A matriz de adjacência do grafo.
- * @return int 1 se um ciclo for detectado, 0 caso contrário.
- */
-int buscaCiclo(int u, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
-    int linha_u = u / COLUNAS;
-    int coluna_u = u % COLUNAS;
-    planilha[linha_u][coluna_u].visitado = 1; // Marcado como visitando
-
-    for (int v = 0; v < NUM_CELULAS; v++) {
-        if (grafo[u][v] == 1) { // Se 'u' depende de 'v'
+    for (int v = 0; v < NUM_CELULAS && !cicloDetectado; v++) {
+        if (grafo[indice][v] == 1) {
             int linha_v = v / COLUNAS;
             int coluna_v = v % COLUNAS;
 
             if (planilha[linha_v][coluna_v].visitado == 1) {
-                return 1; // Ciclo detectado
+                cicloDetectado = 1;
             }
             if (planilha[linha_v][coluna_v].visitado == 0) {
                 if (buscaCiclo(v, planilha, grafo)) {
-                    return 1;
+                    cicloDetectado = 1;
                 }
             }
         }
     }
 
-    planilha[linha_u][coluna_u].visitado = 2; // Marcado como visitado
-    return 0;
+    planilha[linha_indice][coluna_indice].visitado = 2;
+    return (cicloDetectado);
 }
 
-/**
- * @brief Limpa os estados de visitação da planilha.
- * 
- * @param planilha A matriz de células.
- */
 void limpaVisitados(Celula planilha[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
@@ -115,230 +88,142 @@ void limpaVisitados(Celula planilha[LINHAS][COLUNAS]) {
     }
 }
 
-// =================================================================================================
-// Funções de Cálculo e Processamento
-// =================================================================================================
+int analisarIntervalo(const char *intervaloString, int *indiceInicio, int *indiceFim) {
+    char coordenadaInicio[10], coordenadaFim[10];
+    const char *pontos = strstr(intervaloString, "..");
+    if (!pontos) return 0;
 
-/**
- * @brief Analisa uma string de intervalo (ex: "B1..D2") e retorna os índices inicial e final.
- * 
- * @param range_str A string do intervalo.
- * @param start_index Ponteiro para armazenar o índice inicial.
- * @param end_index Ponteiro para armazenar o índice final.
- * @return int 1 se o intervalo for válido, 0 caso contrário.
- */
-int parseRange(const char *range_str, int *start_index, int *end_index) {
-    char start_coord[10], end_coord[10];
-    const char *dot_dot = strstr(range_str, "..");
-    if (!dot_dot) return 0;
+    int tamanhoInicio = pontos - intervaloString;
+    if (tamanhoInicio >= 10) return 0;
+    strncpy(coordenadaInicio, intervaloString, tamanhoInicio);
+    coordenadaInicio[tamanhoInicio] = '\0';
+    
+    strcpy(coordenadaFim, pontos + 2);
 
-    // Copia a coordenada inicial
-    int len_start = dot_dot - range_str;
-    if (len_start >= 10) return 0;
-    strncpy(start_coord, range_str, len_start);
-    start_coord[len_start] = '\0';
+    *indiceInicio = converteCoordenadaParaIndice(coordenadaInicio);
+    *indiceFim = converteCoordenadaParaIndice(coordenadaFim);
 
-    // Copia a coordenada final
-    strcpy(end_coord, dot_dot + 2);
-
-    *start_index = converteCoordenadaParaIndice(start_coord);
-    *end_index = converteCoordenadaParaIndice(end_coord);
-
-    return (*start_index != -1 && *end_index != -1);
+    return (*indiceInicio != -1 && *indiceFim != -1);
 }
 
-/**
- * @brief Calcula o valor de uma célula, resolvendo recursivamente suas dependências.
- * 
- * @param linha A linha da célula.
- * @param coluna A coluna da célula.
- * @param planilha A matriz de células.
- * @param grafo A matriz de adjacência do grafo.
- * @return double O valor calculado da célula.
- */
+double calculaCelulaReferencia(const char *formula, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
+    int indice = converteCoordenadaParaIndice(formula + 1);
+    double valido = 1.0;
+    if (indice == -1) valido = 0.0;
+    
+    int linha = indice / COLUNAS;
+    int coluna = indice % COLUNAS;
+    return ((valido == 0.0)? valido : calculaValorCelula(linha, coluna, planilha, grafo));
+}
+
+double calculaFuncaoCelula(const char *formula, int linha, int coluna, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
+    char nomeFuncao[10], intervaloStr[50];
+    int inicio, fim;
+    double resultado;
+
+    if(sscanf(formula + 1, "%[^(](%[^)])", nomeFuncao, intervaloStr) != 2) resultado = 0.0;
+    else if (!analisarIntervalo(intervaloStr, &inicio, &fim)) resultado = 0.0;
+    else{
+        double *valores = malloc(NUM_CELULAS * sizeof(double));
+        int count = 0;
+        for (int i = inicio; i <= fim; i++) {
+            int r = i / COLUNAS;
+            int c = i % COLUNAS;
+            valores[count++] = calculaValorCelula(r, c, planilha, grafo);
+        }
+
+        resultado = 0.0;
+
+        if(count > 0){
+            if(strcasecmp(nomeFuncao, "soma") == 0){
+                for (int i = 0; i < count; i++) resultado += valores[i];
+            }else if(strcasecmp(nomeFuncao, "max") == 0){
+                resultado = valores[0];
+                for (int i = 1; i < count; i++) if (valores[i] > resultado) resultado = valores[i];
+            }else if(strcasecmp(nomeFuncao, "min") == 0){
+                resultado = valores[0];
+                for (int i = 1; i < count; i++) if (valores[i] < resultado) resultado = valores[i];
+            }else if(strcasecmp(nomeFuncao, "media") == 0){
+                double soma = 0.0;
+                for (int i = 0; i < count; i++) soma += valores[i];
+                resultado = soma / count;
+            }else resultado = 0.0;
+        }
+
+        free(valores);
+    }
+    
+    return (resultado);
+}
+
 double calculaValorCelula(int linha, int coluna, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
     char *formula = planilha[linha][coluna].formula;
     double valor = 0.0;
 
-    if (formula[0] == '\0') {
-        // Célula vazia
-        valor = 0.0;
-    } else if (formula[0] == '=') {
-        // Referência a outra célula (ex: =B13)
-        char ref_coord[10];
-        strcpy(ref_coord, formula + 1);
-        int ref_indice = converteCoordenadaParaIndice(ref_coord);
-        if (ref_indice != -1) {
-            int ref_linha = ref_indice / COLUNAS;
-            int ref_coluna = ref_indice % COLUNAS;
-            // Chamada recursiva para calcular o valor da célula referenciada
-            valor = calculaValorCelula(ref_linha, ref_coluna, planilha, grafo);
-        } else {
-            printf("ERRO: Referência de célula inválida em %c%d\n", 'A' + coluna, linha + 1);
-            valor = 0.0;
-        }
-    } else if (formula[0] == '@') {
-        // Função (ex: @soma(B1..D2))
-        char func_name[10];
-        char range_str[50];
-        int start_index, end_index;
+    if (formula[0] == '\0') valor = 0.0;
+    else if (formula[0] == '=') valor = calculaCelulaReferencia(formula, planilha, grafo);
+    else if (formula[0] == '@') valor = calculaFuncaoCelula(formula, linha, coluna, planilha, grafo);
+    else valor = atof(formula);
 
-        // Extrai o nome da função e o intervalo
-        if (sscanf(formula + 1, "%[^(](%[^)])", func_name, range_str) == 2) {
-            if (parseRange(range_str, &start_index, &end_index)) {
-                double *valores = (double *)malloc(NUM_CELULAS * sizeof(double));
-                int count = 0;
-
-                // Itera sobre o intervalo (assumindo que start_index < end_index para simplificar)
-                for (int i = start_index; i <= end_index; i++) {
-                    int r = i / COLUNAS;
-                    int c = i % COLUNAS;
-                    // Calcula o valor de cada célula no intervalo
-                    valores[count++] = calculaValorCelula(r, c, planilha, grafo);
-                }
-
-                if (count > 0) {
-                    if (strcasecmp(func_name, "soma") == 0) {
-                        valor = 0.0;
-                        for (int i = 0; i < count; i++) valor += valores[i];
-                    } else if (strcasecmp(func_name, "max") == 0) {
-                        valor = valores[0];
-                        for (int i = 1; i < count; i++) if (valores[i] > valor) valor = valores[i];
-                    } else if (strcasecmp(func_name, "min") == 0) {
-                        valor = valores[0];
-                        for (int i = 1; i < count; i++) if (valores[i] < valor) valor = valores[i];
-                    } else if (strcasecmp(func_name, "media") == 0) {
-                        double soma = 0.0;
-                        for (int i = 0; i < count; i++) soma += valores[i];
-                        valor = soma / count;
-                    } else {
-                        printf("ERRO: Função desconhecida '%s' em %c%d\n", func_name, 'A' + coluna, linha + 1);
-                        valor = 0.0;
-                    }
-                }
-                free(valores);
-            } else {
-                printf("ERRO: Intervalo de função inválido em %c%d\n", 'A' + coluna, linha + 1);
-                valor = 0.0;
-            }
-        } else {
-            printf("ERRO: Sintaxe de função inválida em %c%d\n", 'A' + coluna, linha + 1);
-            valor = 0.0;
-        }
-    } else {
-        // Valor numérico
-        valor = atof(formula);
-    }
-
-    // Armazena o valor calculado na célula
     planilha[linha][coluna].valor = valor;
-    return valor;
+    return (valor);
 }
 
-/**
- * @brief Atualiza todos os valores da planilha, resolvendo as dependências.
- * 
- * @param planilha A matriz de células.
- * @param grafo A matriz de adjacência do grafo.
- */
 void atualizaPlanilha(Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
     printf("\n--- Atualizando Planilha ---\n");
     for (int i = 0; i < LINHAS; i++) {
-        for (int j = 0; j < COLUNAS; j++) {
-            // Recalcula o valor de cada célula
+        for (int j = 0; j < COLUNAS; j++)
             calculaValorCelula(i, j, planilha, grafo);
-        }
     }
     printf("--- Atualização Concluída ---\n");
 }
 
-/**
- * @brief Processa a entrada do usuário, atualiza a fórmula da célula e o grafo de dependências.
- * 
- * @param entrada A string de entrada do usuário (ex: "A1 10").
- * @param planilha A matriz de células.
- * @param grafo A matriz de adjacência do grafo.
- * @return int 1 se a entrada foi processada com sucesso, 0 caso contrário.
- */
 int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
-    char coord_str[10];
-    char formula_str[50];
+    char coordenadaString[10];
+    char formulaString[50];
+    int retorno = 1;
     
-    // Tenta extrair a coordenada e a fórmula/valor
-    if (sscanf(entrada, "%s %s", coord_str, formula_str) != 2) {
-        printf("ERRO: Formato de entrada inválido. Use: COORDENADA VALOR/FORMULA (ex: A1 10 ou B2 =A1)\n");
-        return 0;
-    }
+    if (sscanf(entrada, "%s %s", coordenadaString, formulaString) != 2) retorno = 0;
+    else{
+        int indice = converteCoordenadaParaIndice(coordenadaString);
+        if (indice == -1) retorno = 0;
+        else{
+            int linha = indice / COLUNAS;
+            int coluna = indice % COLUNAS;
 
-    int indice_u = converteCoordenadaParaIndice(coord_str);
-    if (indice_u == -1) {
-        printf("ERRO: Coordenada de célula inválida: %s\n", coord_str);
-        return 0;
-    }
+            for(int v = 0; v < NUM_CELULAS; v++) grafo[indice][v] = 0;
+            strcpy(planilha[linha][coluna].formula, formulaString);
+            if(formulaString[0] == '='){
+                char referenciaCoordenada[10];
+                strcpy(referenciaCoordenada, formulaString + 1);
 
-    int linha_u = indice_u / COLUNAS;
-    int coluna_u = indice_u % COLUNAS;
+                int indice_v = converteCoordenadaParaIndice(referenciaCoordenada);
+                if (indice_v != -1) grafo[indice][indice_v] = 1;
+            }else if(formulaString[0] == '@'){
+                char nomeFuncao[10];
+                char intervaloString[50];
+                int indiceInicio, indiceFim;
 
-    // 1. Limpar as dependências antigas (arestas de saída) no grafo
-    for (int v = 0; v < NUM_CELULAS; v++) {
-        grafo[indice_u][v] = 0;
-    }
-
-    // 2. Atualizar a fórmula da célula
-    strcpy(planilha[linha_u][coluna_u].formula, formula_str);
-
-    // 3. Analisar a nova fórmula e adicionar novas dependências (arestas de saída)
-    if (formula_str[0] == '=') {
-        // Dependência de célula única (ex: =B13)
-        char ref_coord[10];
-        strcpy(ref_coord, formula_str + 1);
-        int indice_v = converteCoordenadaParaIndice(ref_coord);
-        if (indice_v != -1) {
-            grafo[indice_u][indice_v] = 1; // u depende de v (u -> v)
-        }
-    } else if (formula_str[0] == '@') {
-        // Dependência de intervalo de células (ex: @soma(B1..D2))
-        char func_name[10];
-        char range_str[50];
-        int start_index, end_index;
-
-        if (sscanf(formula_str + 1, "%[^(](%[^)])", func_name, range_str) == 2) {
-            if (parseRange(range_str, &start_index, &end_index)) {
-                // Adiciona dependência para todas as células no intervalo
-                for (int v = start_index; v <= end_index; v++) {
-                    grafo[indice_u][v] = 1; // u depende de v (u -> v)
+                if (sscanf(formulaString + 1, "%[^(](%[^)])", nomeFuncao, intervaloString) == 2) {
+                    if (analisarIntervalo(intervaloString, &indiceInicio, &indiceFim))
+                        for (int v = indiceInicio; v <= indiceFim; v++) grafo[indice][v] = 1;
                 }
             }
+            
+            limpaVisitados(planilha);
+            if (buscaCiclo(indice, planilha, grafo)) {
+                planilha[linha][coluna].formula[0] = '\0';
+                for (int v = 0; v < NUM_CELULAS; v++) grafo[indice][v] = 0;
+                retorno = 0;
+            }
+
+            atualizaPlanilha(planilha, grafo);
         }
     }
-    
-    // 4. Verificar se a nova dependência cria um ciclo
-    limpaVisitados(planilha);
-    if (buscaCiclo(indice_u, planilha, grafo)) {
-        printf("ERRO: Ciclo detectado! A operação foi desfeita.\n");
-        // Desfaz a operação (limpa a fórmula e as dependências)
-        planilha[linha_u][coluna_u].formula[0] = '\0';
-        for (int v = 0; v < NUM_CELULAS; v++) {
-            grafo[indice_u][v] = 0;
-        }
-        return 0;
-    }
 
-    // 5. Se não houver ciclo, recalcula a planilha
-    atualizaPlanilha(planilha, grafo);
-
-    return 1;
+    return retorno;
 }
 
-// =================================================================================================
-// Funções de Exibição
-// =================================================================================================
-
-/**
- * @brief Exibe a planilha na tela com os valores calculados.
- * 
- * @param planilha A matriz de células.
- */
 void exibePlanilha(Celula planilha[LINHAS][COLUNAS]) {
     printf("\n================================================================================================\n");
     printf("  |   A    |   B    |   C    |   D    |   E    |   F    |   G    |   H    |\n");

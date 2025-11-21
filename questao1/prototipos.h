@@ -1,9 +1,11 @@
 #ifndef PROTOTIPOS_H
 #define PROTOTIPOS_H
 
+#define DISCOS 4
 #define VERTICES 81
+#define INFINITO 9999
+#define PESO_ARESTA 1
 
-// ========== Protótipos das funções ==========
 void mostraConfiguracao(int configuracao[]);
 void pegaConfiguracaoInicial(int configuracao[]);
 void converteIndiceParaConfiguracao(int indice, int configuracao[]);
