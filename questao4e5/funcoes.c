@@ -266,3 +266,53 @@ void exibePlanilha(Celula planilha[LINHAS][COLUNAS]) {
     }
     printf("================================================================================================\n");
 }
+
+void buscaEmProfundidade(int u, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+    int linha = u / COLUNAS;
+    int coluna = u % COLUNAS;
+
+    if(!(planilha[linha][coluna].visitado)){
+        planilha[linha][coluna].visitado = 1;
+
+        printf("Visitando: %c%d\n", 'A' + coluna, linha + 1);
+
+        ListaDeAdjacencia *temp = grafo[u];
+        while (temp != NULL) {
+            buscaEmProfundidade(temp->indice_destino, planilha, grafo);
+            temp = temp->proximo;
+        }
+    }
+    
+}
+
+void buscaEmLargura(int inicio, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+    int fila[NUM_CELULAS];
+    int frente = 0, tras = 0;
+
+    int linha_inicio = inicio / COLUNAS;
+    int coluna_inicio = inicio % COLUNAS;
+    planilha[linha_inicio][coluna_inicio].visitado = 1;
+    fila[tras++] = inicio;
+
+    while(frente < tras){
+        int indice = fila[frente++];
+        int linha = indice / COLUNAS;
+        int coluna = indice % COLUNAS;
+
+        printf("Visitando: %c%d\n", 'A' + coluna, linha + 1);
+
+        ListaDeAdjacencia *temp = grafo[indice];
+        while(temp != NULL){
+            int v = temp->indice_destino;
+            int linha_v = v / COLUNAS;
+            int coluna_v = v % COLUNAS;
+
+            if(!(planilha[linha_v][coluna_v].visitado)){
+                planilha[linha_v][coluna_v].visitado = 1;
+                fila[tras++] = v;
+            }
+            temp = temp->proximo;
+        }
+    }
+}
+

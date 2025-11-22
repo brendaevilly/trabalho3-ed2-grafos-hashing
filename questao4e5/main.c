@@ -25,6 +25,16 @@ int main() {
             }else loop = 0;
         }else loop = 0;
     }
+    int indice = converteCoordenadaParaIndice("D1");
+
+    printf("\n--- BUSCA EM PROFUNDIDADE ---\n");
+    limpaVisitados(planilha);
+    buscaEmProfundidade(indice, planilha, grafo);
+
+    printf("\n--- BUSCA EM LARGURA ---\n");
+    limpaVisitados(planilha);
+    buscaEmLargura(indice, planilha, grafo);
+
     limpaGrafo(grafo);
 
     printf("\nEncerrando o programa.\n");
