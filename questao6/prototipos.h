@@ -8,9 +8,7 @@
 #define NUM_CELULAS (COLUNAS * LINHAS)
 #define NUM_TESTES 30
 
-// =================================================================================================
 // Estruturas Comuns
-// =================================================================================================
 
 // Estrutura para representar o conteúdo de uma célula
 typedef struct {
@@ -25,17 +23,14 @@ typedef struct ListaDeAdjacencia {
     struct ListaDeAdjacencia *proximo;
 } ListaDeAdjacencia;
 
-// =================================================================================================
 // Protótipos Comuns (Conversão, Inicialização)
-// =================================================================================================
 
 int converteCoordenadaParaIndice(const char *coordenada);
 void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]);
 void limpaVisitados(Celula planilha[LINHAS][COLUNAS]);
 
-// =================================================================================================
 // Protótipos para Matriz de Adjacência (Questão 3)
-// =================================================================================================
+
 
 // Operações de Grafo
 void inicializaGrafoMatriz(int grafo[NUM_CELULAS][NUM_CELULAS]);
@@ -49,9 +44,7 @@ void dfsMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], int inicio, int *resultado_b
 // Operação de Inserção (simplificada para teste de tempo)
 int insereMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], int origem, int destino);
 
-// =================================================================================================
 // Protótipos para Lista de Adjacência (Questão 4)
-// =================================================================================================
 
 // Operações de Grafo
 void inicializaGrafoLista(ListaDeAdjacencia *grafo[NUM_CELULAS]);
@@ -66,9 +59,7 @@ void dfsLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int inicio, int *resultado_
 // Operação de Inserção (simplificada para teste de tempo)
 int insereLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino);
 
-// =================================================================================================
 // Protótipos de Medição de Tempo (Questão 6)
-// =================================================================================================
 
 double medeTempoInsercaoMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], int num_arestas);
 double medeTempoBuscaMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], void (*funcao_busca)(int[NUM_CELULAS][NUM_CELULAS], int, int*));

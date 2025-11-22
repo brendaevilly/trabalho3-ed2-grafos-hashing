@@ -3,13 +3,8 @@
 #include <string.h>
 #include "prototipos.h"
 
-// =================================================================================================
 // Funções de Grafo (Lista de Adjacência)
-// =================================================================================================
 
-/**
- * @brief Cria um novo nó para a lista de adjacência.
- */
 ListaDeAdjacencia *criaNo(int indice_destino) {
     ListaDeAdjacencia *novoNo = (ListaDeAdjacencia *)malloc(sizeof(ListaDeAdjacencia));
     if (novoNo == NULL) {
@@ -22,18 +17,14 @@ ListaDeAdjacencia *criaNo(int indice_destino) {
     return novoNo;
 }
 
-/**
- * @brief Inicializa o grafo com NULL.
- */
+
 void inicializaGrafoLista(ListaDeAdjacencia *grafo[NUM_CELULAS]) {
     for (int i = 0; i < NUM_CELULAS; i++) {
         grafo[i] = NULL;
     }
 }
 
-/**
- * @brief Adiciona uma aresta direcionada (origem -> destino) ao grafo.
- */
+
 void adicionaArestaLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino) {
     ListaDeAdjacencia *novoNo = criaNo(destino);
     if (novoNo != NULL) {
@@ -42,9 +33,7 @@ void adicionaArestaLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int 
     }
 }
 
-/**
- * @brief Remove todas as arestas de saída de um vértice (limpa as dependências).
- */
+
 void removeArestasLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem) {
     ListaDeAdjacencia *atual = grafo[origem];
     ListaDeAdjacencia *proximo;
@@ -56,19 +45,14 @@ void removeArestasLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem) {
     grafo[origem] = NULL;
 }
 
-/**
- * @brief Libera toda a memória alocada para o grafo.
- */
+
 void limpaGrafoLista(ListaDeAdjacencia *grafo[NUM_CELULAS]) {
     for (int i = 0; i < NUM_CELULAS; i++) {
         removeArestasLista(grafo, i);
     }
 }
 
-/**
- * @brief Simula a inserção de uma aresta para fins de medição de tempo.
- * @return 1 se a inserção foi bem-sucedida, 0 caso contrário.
- */
+
 int insereLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino) {
     // Simula a lógica de inserção: remove antigas e adiciona nova
     removeArestasLista(grafo, origem);
@@ -76,14 +60,9 @@ int insereLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino) 
     return 1;
 }
 
-// =================================================================================================
 // Funções de Busca (Lista de Adjacência)
-// =================================================================================================
 
-/**
- * @brief Busca em Largura (BFS) para Lista de Adjacência.
- * @param resultado_busca Array para armazenar a ordem de visitação.
- */
+
 void bfsLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int inicio, int *resultado_busca) {
     int visitado[NUM_CELULAS] = {0};
     int fila[NUM_CELULAS];
@@ -109,9 +88,7 @@ void bfsLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int inicio, int *resultado_
     }
 }
 
-/**
- * @brief Função auxiliar recursiva para a Busca em Profundidade (DFS).
- */
+
 static void dfsListaRecursiva(ListaDeAdjacencia *grafo[NUM_CELULAS], int u, int *resultado_busca, int *visitado, int *contador) {
     visitado[u] = 1;
     resultado_busca[(*contador)++] = u;
@@ -126,11 +103,7 @@ static void dfsListaRecursiva(ListaDeAdjacencia *grafo[NUM_CELULAS], int u, int 
     }
 }
 
-/**
- * @brief Busca em Profundidade (DFS) para Lista de Adjacência.
- * @param resultado_busca Array para armazenar a ordem de visitação.
- * @param visitado Array de controle de visitação (passado para manter a modularidade do protótipo).
- */
+
 void dfsLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int inicio, int *resultado_busca, int *visitado) {
     int contador = 0;
     for (int i = 0; i < NUM_CELULAS; i++) visitado[i] = 0; // Limpa o array de visitação

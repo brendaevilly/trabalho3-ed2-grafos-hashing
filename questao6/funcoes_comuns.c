@@ -4,12 +4,7 @@
 #include <ctype.h>
 #include "prototipos.h"
 
-/**
- * @brief Converte uma coordenada de célula (ex: "A1", "H20") para um índice linear (0 a NUM_CELULAS-1).
- * 
- * @param coordenada A string da coordenada da célula.
- * @return int O índice linear da célula, ou -1 se a coordenada for inválida.
- */
+
 int converteCoordenadaParaIndice(const char *coordenada) {
     if (strlen(coordenada) < 2) return -1;
 
@@ -24,11 +19,7 @@ int converteCoordenadaParaIndice(const char *coordenada) {
     return linha * COLUNAS + coluna;
 }
 
-/**
- * @brief Inicializa a planilha (apenas a parte de controle de visitação).
- * 
- * @param planilha A matriz de células da planilha.
- */
+
 void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
@@ -37,11 +28,7 @@ void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]) {
     }
 }
 
-/**
- * @brief Limpa os estados de visitação da planilha.
- * 
- * @param planilha A matriz de células.
- */
+
 void limpaVisitados(Celula planilha[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {

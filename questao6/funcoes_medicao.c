@@ -3,17 +3,7 @@
 #include <time.h>
 #include "prototipos.h"
 
-// =================================================================================================
-// Funções de Medição de Tempo (Matriz de Adjacência)
-// =================================================================================================
 
-/**
- * @brief Mede o tempo médio de inserção de arestas em Matriz de Adjacência.
- * 
- * @param grafo O grafo de Matriz de Adjacência.
- * @param num_arestas O número de arestas a serem inseridas em cada teste.
- * @return double O tempo médio gasto em segundos.
- */
 double medeTempoInsercaoMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], int num_arestas) {
     clock_t inicio, fim;
     double tempo_total = 0.0;
@@ -37,13 +27,6 @@ double medeTempoInsercaoMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], int num_ares
     return tempo_total / NUM_TESTES;
 }
 
-/**
- * @brief Mede o tempo médio de busca (BFS ou DFS) em Matriz de Adjacência.
- * 
- * @param grafo O grafo de Matriz de Adjacência.
- * @param funcao_busca Ponteiro para a função de busca (bfsMatriz ou dfsMatriz).
- * @return double O tempo médio gasto em segundos.
- */
 double medeTempoBuscaMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], void (*funcao_busca)(int[NUM_CELULAS][NUM_CELULAS], int, int*)) {
     clock_t inicio, fim;
     double tempo_total = 0.0;
@@ -77,17 +60,6 @@ double medeTempoBuscaMatriz(int grafo[NUM_CELULAS][NUM_CELULAS], void (*funcao_b
     return tempo_total / NUM_TESTES;
 }
 
-// =================================================================================================
-// Funções de Medição de Tempo (Lista de Adjacência)
-// =================================================================================================
-
-/**
- * @brief Mede o tempo médio de inserção de arestas em Lista de Adjacência.
- * 
- * @param grafo O grafo de Lista de Adjacência.
- * @param num_arestas O número de arestas a serem inseridas em cada teste.
- * @return double O tempo médio gasto em segundos.
- */
 double medeTempoInsercaoLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int num_arestas) {
     clock_t inicio, fim;
     double tempo_total = 0.0;
@@ -115,13 +87,7 @@ double medeTempoInsercaoLista(ListaDeAdjacencia *grafo[NUM_CELULAS], int num_are
     return tempo_total / NUM_TESTES;
 }
 
-/**
- * @brief Mede o tempo médio de busca (BFS ou DFS) em Lista de Adjacência.
- * 
- * @param grafo O grafo de Lista de Adjacência.
- * @param funcao_busca Ponteiro para a função de busca (bfsLista ou dfsLista).
- * @return double O tempo médio gasto em segundos.
- */
+
 double medeTempoBuscaLista(ListaDeAdjacencia *grafo[NUM_CELULAS], void (*funcao_busca)(ListaDeAdjacencia*[NUM_CELULAS], int, int*)) {
     clock_t inicio, fim;
     double tempo_total = 0.0;
