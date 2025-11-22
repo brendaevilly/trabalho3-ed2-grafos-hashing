@@ -27,4 +27,8 @@ void atualizaPlanilha(Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][N
 int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
 void exibePlanilha(Celula planilha[LINHAS][COLUNAS]);
 
+void dfs_rec(int u, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+void buscaEmProfundidadeGrafo(int grafo[NUM_CELULAS][NUM_CELULAS], Celula planilha[LINHAS][COLUNAS]);
+void buscaEmLarguraGrafo(int grafo[NUM_CELULAS][NUM_CELULAS], Celula planilha[LINHAS][COLUNAS]);
+
 #endif
