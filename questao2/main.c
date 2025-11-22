@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include "prototipos.h"
-
-#define DISCOS 4
-#define VERTICES 81
 
 int main(){
     ListaDeAdjacencia *grafo[VERTICES];

@@ -1,25 +1,30 @@
 #ifndef PROTOTIPOS_H
 #define PROTOTIPOS_H
 
-#define COLUNAS 8 // A a H
-#define LINHAS 20 // 1 a 20
+#define COLUNAS 8
+#define LINHAS 20 
 #define NUM_CELULAS (COLUNAS * LINHAS)
 
-// Estrutura para representar o conteúdo de uma célula
+struct Celula;
 typedef struct {
-    char formula[50]; // Armazena a fórmula ou o valor de entrada (ex: "10", "=B1", "@soma(A1..B2)")
-    double valor;     // Valor numérico calculado da célula
-    int visitado;     // Para controle de ciclo e busca (0: não visitado, 1: visitando, 2: visitado)
+    char formula[50];
+    double valor;   
+    int visitado;    
 } Celula;
 
-// Protótipos das funções
+void menu();
 void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]);
+void inicializarGrafo(int grafo[NUM_CELULAS][NUM_CELULAS]);
 int converteCoordenadaParaIndice(const char *coordenada);
 void converteIndiceParaCoordenada(int indice, char *coordenada);
-int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
-void atualizaPlanilha(Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+int buscaCiclo(int indice, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+void limpaVisitados(Celula planilha[LINHAS][COLUNAS]);
+int analisarIntervalo(const char *intervaloString, int *indiceInicio, int *indiceFim);
+double calculaCelulaReferencia(const char *formula, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+double calculaFuncaoCelula(const char *formula, int linha, int coluna, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
 double calculaValorCelula(int linha, int coluna, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+void atualizaPlanilha(Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
+int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
 void exibePlanilha(Celula planilha[LINHAS][COLUNAS]);
-int buscaCiclo(int u, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]);
 
-#endif // PROTOTIPOS_H
+#endif

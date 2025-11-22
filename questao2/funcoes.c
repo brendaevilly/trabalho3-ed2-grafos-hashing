@@ -1,14 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "prototipos.h"
-
-#define DISCOS 4
-#define VERTICES 81
-#define INFINITO 9999
-#define PESO_ARESTA 1
-
-// ========== Protótipos das funções ==========
 
 void adicionaAresta(int verticeOrigem, int verticeDestino, ListaDeAdjacencia *grafo[VERTICES]){
     ListaDeAdjacencia *novoAdjacente = (ListaDeAdjacencia *)malloc(sizeof(ListaDeAdjacencia));

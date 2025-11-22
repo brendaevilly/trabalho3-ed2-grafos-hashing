@@ -3,44 +3,28 @@
 #include <string.h>
 #include "prototipos.h"
 
-// ========== Função principal ==========
 int main() {
-    // Planilha e Grafo de Dependências (Lista de Adjacência)
     Celula planilha[LINHAS][COLUNAS];
-    ListaDeAdjacencia *grafo[NUM_CELULAS]; // array de ponteiros para as listas de adjacência
+    ListaDeAdjacencia *grafo[NUM_CELULAS];
 
-    // Inicialização
     inicializaPlanilha(planilha);
-    for (int i = 0; i < NUM_CELULAS; i++) {
-        grafo[i] = NULL;
-    }
-
+    inicializarGrafo(grafo);
     char entrada[100];
-    printf("--- Planilha de Cálculo Rudimentar (Lista de Adjacência) ---\n");
-    printf("Colunas: A-H, Linhas: 1-20. Total de %d células.\n", NUM_CELULAS);
-    printf("Comandos:\n");
-    printf("  - Para inserir valor/fórmula: COORDENADA VALOR/FORMULA (ex: A1 10, B2 =A1, C3 @soma(A1..B2))\n");
-    printf("  - Para sair: sair\n");
-    
+    menu();
     exibePlanilha(planilha);
 
-    while (1) {
+    int loop = 1;
+    while (loop) {
         printf("\n> ");
-        if (fgets(entrada, sizeof(entrada), stdin) == NULL) {
-            break;
-        }
-        // Remove a quebra de linha
-        entrada[strcspn(entrada, "\n")] = 0;
-
-        if (strcasecmp(entrada, "sair") == 0) {
-            break;
-        }
-
-        processaEntrada(entrada, planilha, grafo);
-        exibePlanilha(planilha);
+        if(fgets(entrada, sizeof(entrada), stdin) != NULL){
+            entrada[strcspn(entrada, "\n")] = 0;
+            if (strcasecmp(entrada, "sair") != 0) {
+                int verifica = processaEntrada(entrada, planilha, grafo);
+                if(verifica == 0) printf("Entrada invalida. Tente novamente.\n");
+                else exibePlanilha(planilha);
+            }else loop = 0;
+        }else loop = 0;
     }
-
-    // Libera a memória do grafo
     limpaGrafo(grafo);
 
     printf("\nEncerrando o programa.\n");

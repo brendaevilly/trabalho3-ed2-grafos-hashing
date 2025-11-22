@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include "prototipos.h"
 
-#define DISCOS 4
-#define VERTICES 81
-#define INFINITO 9999
-#define PESO_ARESTA 1
-
-// ========== Implementações das funções ==========
 void pegaConfiguracaoInicial(int configuracao[]){
     printf("Digite a configuracao inicial dos 4 discos.\n");
     printf("Tres pinos:\n0 - pino A\n1 - pino B\n2 - pino C\n");

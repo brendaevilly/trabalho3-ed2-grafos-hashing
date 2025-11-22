@@ -5,51 +5,34 @@
 #include <math.h>
 #include "prototipos.h"
 
-// =================================================================================================
-// Funções de Manipulação da Lista de Adjacência
-// =================================================================================================
-
-/**
- * @brief Cria um novo nó para a lista de adjacência.
- * 
- * @param indice_destino O índice do vértice de destino.
- * @return ListaDeAdjacencia* O novo nó criado.
- */
-ListaDeAdjacencia *criaNo(int indice_destino) {
-    ListaDeAdjacencia *novoNo = (ListaDeAdjacencia *)malloc(sizeof(ListaDeAdjacencia));
-    if (novoNo == NULL) {
-        perror("Erro ao alocar memória para o nó da lista de adjacência");
-        exit(EXIT_FAILURE);
-    }
-    novoNo->indice_destino = indice_destino;
-    novoNo->proximo = NULL;
-    return novoNo;
+void menu(){
+    printf("\n--- Planilha de Calculo Rudimentar (Lista de Adjacencia) ---\n");
+    printf("Colunas: A-H | Linhas: 1-20 | Total de %d celulas.\n", NUM_CELULAS);
+    printf("\nComandos:\n");
+    printf("  - Para inserir valor/formula: COORDENADA VALOR/FORMULA (ex: A1 10, B2 =A1, C3 @soma(A1..B2))\n");
+    printf("  - Para sair: sair\n");
 }
 
-/**
- * @brief Adiciona uma aresta direcionada (origem -> destino) ao grafo.
- * 
- * @param grafo O array de listas de adjacência.
- * @param origem O índice da célula de origem.
- * @param destino O índice da célula de destino (dependência).
- */
+ListaDeAdjacencia *criaNo(int indice_destino) {
+    ListaDeAdjacencia *novoNo = (ListaDeAdjacencia *)malloc(sizeof(ListaDeAdjacencia));
+    if(novoNo != NULL){
+        novoNo->indice_destino = indice_destino;
+        novoNo->proximo = NULL;
+    }
+
+    return (novoNo);
+}
+
 void adicionaAresta(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino) {
-    // Adiciona o novo nó no início da lista de adjacência da origem
     ListaDeAdjacencia *novoNo = criaNo(destino);
     novoNo->proximo = grafo[origem];
     grafo[origem] = novoNo;
 }
 
-/**
- * @brief Remove todas as arestas de saída de um vértice (limpa as dependências).
- * 
- * @param grafo O array de listas de adjacência.
- * @param origem O índice da célula de origem.
- */
 void removeArestas(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem) {
     ListaDeAdjacencia *atual = grafo[origem];
     ListaDeAdjacencia *proximo;
-    while (atual != NULL) {
+    while(atual != NULL){
         proximo = atual->proximo;
         free(atual);
         atual = proximo;
@@ -57,20 +40,9 @@ void removeArestas(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem) {
     grafo[origem] = NULL;
 }
 
-/**
- * @brief Libera toda a memória alocada para o grafo.
- * 
- * @param grafo O array de listas de adjacência.
- */
 void limpaGrafo(ListaDeAdjacencia *grafo[NUM_CELULAS]) {
-    for (int i = 0; i < NUM_CELULAS; i++) {
-        removeArestas(grafo, i);
-    }
+    for (int i = 0; i < NUM_CELULAS; i++) removeArestas(grafo, i);
 }
-
-// =================================================================================================
-// Funções de Conversão e Inicialização (Reutilizadas da Questão 3)
-// =================================================================================================
 
 void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
@@ -82,278 +54,206 @@ void inicializaPlanilha(Celula planilha[LINHAS][COLUNAS]) {
     }
 }
 
+void inicializarGrafo(ListaDeAdjacencia *grafo[NUM_CELULAS]){
+    for (int i = 0; i < NUM_CELULAS; i++) {
+        grafo[i] = NULL;
+    }
+}
+
 int converteCoordenadaParaIndice(const char *coordenada) {
-    if (strlen(coordenada) < 2) return -1;
-
-    char colChar = toupper(coordenada[0]);
-    int coluna = colChar - 'A';
-    int linha = atoi(&coordenada[1]) - 1;
-
-    if (coluna < 0 || coluna >= COLUNAS || linha < 0 || linha >= LINHAS) {
-        return -1;
+    int verifica = 1, coluna, linha;
+    if(strlen(coordenada) < 2) verifica = -1;
+    else{
+        char colChar = toupper(coordenada[0]);
+        coluna = colChar - 'A';
+        linha = atoi(&coordenada[1]) - 1;
+        if(coluna < 0 || coluna >= COLUNAS || linha < 0 || linha >= LINHAS) verifica = -1;
     }
 
-    return linha * COLUNAS + coluna;
+    return ((verifica == 1) ? (linha * COLUNAS + coluna) : verifica);
 }
 
 void converteIndiceParaCoordenada(int indice, char *coordenada) {
-    if (indice < 0 || indice >= NUM_CELULAS) {
-        sprintf(coordenada, "INVALIDO");
-        return;
+    int linha, coluna;
+    if (indice < 0 || indice >= NUM_CELULAS) sprintf(coordenada, "INVALIDO");
+    else{
+        linha = indice / COLUNAS;
+        coluna = indice % COLUNAS;
+        sprintf(coordenada, "%c%d", 'A' + coluna, linha + 1);
     }
-    int linha = indice / COLUNAS;
-    int coluna = indice % COLUNAS;
-
-    sprintf(coordenada, "%c%d", 'A' + coluna, linha + 1);
 }
 
-// =================================================================================================
-// Funções de Grafo e Busca (Adaptadas para Lista de Adjacência)
-// =================================================================================================
-
-/**
- * @brief Realiza uma busca em profundidade (DFS) para detectar ciclos.
- * 
- * @param u O índice da célula atual.
- * @param planilha A matriz de células.
- * @param grafo O array de listas de adjacência do grafo.
- * @return int 1 se um ciclo for detectado, 0 caso contrário.
- */
 int buscaCiclo(int u, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+    int ciclo = 0;
     int linha_u = u / COLUNAS;
     int coluna_u = u % COLUNAS;
-    planilha[linha_u][coluna_u].visitado = 1; // Marcado como visitando
+    planilha[linha_u][coluna_u].visitado = 1;
 
     ListaDeAdjacencia *temp = grafo[u];
-    while (temp != NULL) {
+    while (temp != NULL && !ciclo) {
         int v = temp->indice_destino;
         int linha_v = v / COLUNAS;
         int coluna_v = v % COLUNAS;
 
-        if (planilha[linha_v][coluna_v].visitado == 1) {
-            return 1; // Ciclo detectado
-        }
+        if (planilha[linha_v][coluna_v].visitado == 1) ciclo = 1;
         if (planilha[linha_v][coluna_v].visitado == 0) {
-            if (buscaCiclo(v, planilha, grafo)) {
-                return 1;
-            }
+            if (buscaCiclo(v, planilha, grafo)) ciclo = 1;
         }
         temp = temp->proximo;
     }
 
-    planilha[linha_u][coluna_u].visitado = 2; // Marcado como visitado
-    return 0;
+    planilha[linha_u][coluna_u].visitado = 2;
+    return ciclo;
 }
 
 void limpaVisitados(Celula planilha[LINHAS][COLUNAS]) {
-    for (int i = 0; i < LINHAS; i++) {
-        for (int j = 0; j < COLUNAS; j++) {
-            planilha[i][j].visitado = 0;
-        }
+    for (int i = 0; i < LINHAS; i++)
+        for (int j = 0; j < COLUNAS; j++) planilha[i][j].visitado = 0;
+}
+
+int analisarIntervalo(const char *intervaloString, int *IndiceInicio, int *IndiceFim) {
+    char coordenadaInicio[10], coordenadaFim[10];
+    const char *pontos = strstr(intervaloString, "..");
+    if (!pontos) return 0;
+
+    int tamanhoInicio = pontos - intervaloString;
+    if (tamanhoInicio >= 10) return 0;
+    strncpy(coordenadaInicio, intervaloString, tamanhoInicio);
+    coordenadaInicio[tamanhoInicio] = '\0';
+
+    strcpy(coordenadaFim, pontos + 2);
+
+    *IndiceInicio = converteCoordenadaParaIndice(coordenadaInicio);
+    *IndiceFim = converteCoordenadaParaIndice(coordenadaFim);
+
+    return (*IndiceInicio != -1 && *IndiceFim != -1);
+}
+
+double calculaReferenciaCelula(const char *formula, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+    double verifica = 1.0;
+    char coordenadaReferencia[10];
+    strcpy(coordenadaReferencia, formula + 1);
+    int linha, coluna;
+
+    int indice = converteCoordenadaParaIndice(coordenadaReferencia);
+    if (indice == -1) verifica = 0.0;
+    else{
+        linha = indice / COLUNAS;
+        coluna = indice % COLUNAS;
     }
+
+    return ((verifica == 1.0) ? calculaValorCelula(linha, coluna, planilha, grafo) : verifica);
 }
 
-// =================================================================================================
-// Funções de Cálculo e Processamento (Adaptadas para Lista de Adjacência)
-// =================================================================================================
+double calculaFuncao(const char *formula, int linha, int coluna, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+    char nomeFuncao[10], intervaloStr[50];
+    int inicio, fim;
+    double resultado = 1.0;
 
-int parseRange(const char *range_str, int *start_index, int *end_index) {
-    char start_coord[10], end_coord[10];
-    const char *dot_dot = strstr(range_str, "..");
-    if (!dot_dot) return 0;
+    if(sscanf(formula + 1, "%[^(](%[^)])", nomeFuncao, intervaloStr) != 2) resultado = 0.0;
+    else if(!analisarIntervalo(intervaloStr, &inicio, &fim)) resultado = 0.0;
+    else{
+        double *valores = malloc(NUM_CELULAS * sizeof(double));
+        int count = 0;
 
-    int len_start = dot_dot - range_str;
-    if (len_start >= 10) return 0;
-    strncpy(start_coord, range_str, len_start);
-    start_coord[len_start] = '\0';
+        for(int i = inicio; i <= fim; i++){
+            int r = i / COLUNAS;
+            int c = i % COLUNAS;
+            valores[count++] = calculaValorCelula(r, c, planilha, grafo);
+        }
 
-    strcpy(end_coord, dot_dot + 2);
+        resultado = 0.0;
+        if(count > 0){
+            if(strcasecmp(nomeFuncao, "soma") == 0) for (int i = 0; i < count; i++) resultado += valores[i];
+            else if(strcasecmp(nomeFuncao, "max") == 0){
+                resultado = valores[0];
+                for (int i = 1; i < count; i++) 
+                    if (valores[i] > resultado) resultado = valores[i];
+            }else if(strcasecmp(nomeFuncao, "min") == 0){
+                resultado = valores[0];
+                for (int i = 1; i < count; i++)
+                    if (valores[i] < resultado) resultado = valores[i];
+            }else if(strcasecmp(nomeFuncao, "media") == 0){
+                double soma = 0.0;
+                for (int i = 0; i < count; i++) soma += valores[i];
+                resultado = soma / count;
+            }else resultado = 0.0;
+        }
 
-    *start_index = converteCoordenadaParaIndice(start_coord);
-    *end_index = converteCoordenadaParaIndice(end_coord);
-
-    return (*start_index != -1 && *end_index != -1);
+        free(valores);
+    }
+    
+    return (resultado);
 }
 
-/**
- * @brief Calcula o valor de uma célula, resolvendo recursivamente suas dependências.
- * 
- * @param linha A linha da célula.
- * @param coluna A coluna da célula.
- * @param planilha A matriz de células.
- * @param grafo O array de listas de adjacência do grafo.
- * @return double O valor calculado da célula.
- */
-double calculaValorCelula(int linha, int coluna, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
+double calculaValorCelula(int linha, int coluna, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]){
     char *formula = planilha[linha][coluna].formula;
     double valor = 0.0;
 
-    if (formula[0] == '\0') {
-        valor = 0.0;
-    } else if (formula[0] == '=') {
-        // Referência a outra célula (ex: =B13)
-        char ref_coord[10];
-        strcpy(ref_coord, formula + 1);
-        int ref_indice = converteCoordenadaParaIndice(ref_coord);
-        if (ref_indice != -1) {
-            int ref_linha = ref_indice / COLUNAS;
-            int ref_coluna = ref_indice % COLUNAS;
-            valor = calculaValorCelula(ref_linha, ref_coluna, planilha, grafo);
-        } else {
-            printf("ERRO: Referência de célula inválida em %c%d\n", 'A' + coluna, linha + 1);
-            valor = 0.0;
-        }
-    } else if (formula[0] == '@') {
-        // Função (ex: @soma(B1..D2))
-        char func_name[10];
-        char range_str[50];
-        int start_index, end_index;
-
-        if (sscanf(formula + 1, "%[^(](%[^)])", func_name, range_str) == 2) {
-            if (parseRange(range_str, &start_index, &end_index)) {
-                double *valores = (double *)malloc(NUM_CELULAS * sizeof(double));
-                int count = 0;
-
-                for (int i = start_index; i <= end_index; i++) {
-                    int r = i / COLUNAS;
-                    int c = i % COLUNAS;
-                    valores[count++] = calculaValorCelula(r, c, planilha, grafo);
-                }
-
-                if (count > 0) {
-                    if (strcasecmp(func_name, "soma") == 0) {
-                        valor = 0.0;
-                        for (int i = 0; i < count; i++) valor += valores[i];
-                    } else if (strcasecmp(func_name, "max") == 0) {
-                        valor = valores[0];
-                        for (int i = 1; i < count; i++) if (valores[i] > valor) valor = valores[i];
-                    } else if (strcasecmp(func_name, "min") == 0) {
-                        valor = valores[0];
-                        for (int i = 1; i < count; i++) if (valores[i] < valor) valor = valores[i];
-                    } else if (strcasecmp(func_name, "media") == 0) {
-                        double soma = 0.0;
-                        for (int i = 0; i < count; i++) soma += valores[i];
-                        valor = soma / count;
-                    } else {
-                        printf("ERRO: Função desconhecida '%s' em %c%d\n", func_name, 'A' + coluna, linha + 1);
-                        valor = 0.0;
-                    }
-                }
-                free(valores);
-            } else {
-                printf("ERRO: Intervalo de função inválido em %c%d\n", 'A' + coluna, linha + 1);
-                valor = 0.0;
-            }
-        } else {
-            printf("ERRO: Sintaxe de função inválida em %c%d\n", 'A' + coluna, linha + 1);
-            valor = 0.0;
-        }
-    } else {
-        valor = atof(formula);
-    }
+    if (formula[0] == '\0') valor = 0.0;
+    else if(formula[0] == '=') valor = calculaReferenciaCelula(formula, planilha, grafo);
+    else if(formula[0] == '@') valor = calculaFuncao(formula, linha, coluna, planilha, grafo);
+    else valor = atof(formula);
 
     planilha[linha][coluna].valor = valor;
-    return valor;
+    return (valor);
 }
 
-/**
- * @brief Atualiza todos os valores da planilha, resolvendo as dependências.
- * 
- * @param planilha A matriz de células.
- * @param grafo O array de listas de adjacência do grafo.
- */
 void atualizaPlanilha(Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
     printf("\n--- Atualizando Planilha ---\n");
     for (int i = 0; i < LINHAS; i++) {
-        for (int j = 0; j < COLUNAS; j++) {
-            calculaValorCelula(i, j, planilha, grafo);
-        }
+        for (int j = 0; j < COLUNAS; j++) calculaValorCelula(i, j, planilha, grafo);
     }
-    printf("--- Atualização Concluída ---\n");
+    printf("--- Atualizacao Concluida ---\n");
 }
 
-/**
- * @brief Processa a entrada do usuário, atualiza a fórmula da célula e o grafo de dependências.
- * 
- * @param entrada A string de entrada do usuário (ex: "A1 10").
- * @param planilha A matriz de células.
- * @param grafo O array de listas de adjacência do grafo.
- * @return int 1 se a entrada foi processada com sucesso, 0 caso contrário.
- */
 int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]) {
-    char coord_str[10];
-    char formula_str[50];
+    int verifica = 1;
+    char coordenadaString[10];
+    char formulaString[50];
     
-    if (sscanf(entrada, "%s %s", coord_str, formula_str) != 2) {
-        printf("ERRO: Formato de entrada inválido. Use: COORDENADA VALOR/FORMULA (ex: A1 10 ou B2 =A1)\n");
-        return 0;
-    }
+    if(sscanf(entrada, "%s %s", coordenadaString, formulaString) != 2) verifica = 0;
+    else{
+        int indice_u = converteCoordenadaParaIndice(coordenadaString);
+        if(indice_u == -1) verifica = 0;
+        else{
+            int linha_u = indice_u / COLUNAS;
+            int coluna_u = indice_u % COLUNAS;
 
-    int indice_u = converteCoordenadaParaIndice(coord_str);
-    if (indice_u == -1) {
-        printf("ERRO: Coordenada de célula inválida: %s\n", coord_str);
-        return 0;
-    }
+            removeArestas(grafo, indice_u);
+            char formula_antiga[50];
+            strcpy(formula_antiga, planilha[linha_u][coluna_u].formula);
+            strcpy(planilha[linha_u][coluna_u].formula, formulaString);
 
-    int linha_u = indice_u / COLUNAS;
-    int coluna_u = indice_u % COLUNAS;
+            if(formulaString[0] == '=') {
+                char coordenadaReferencia[10];
+                strcpy(coordenadaReferencia, formulaString + 1);
+                int indice_v = converteCoordenadaParaIndice(coordenadaReferencia);
+                if(indice_v != -1) adicionaAresta(grafo, indice_u, indice_v);
+            }else if(formulaString[0] == '@') {
+                char nomeFuncao[10];
+                char intervaloString[50];
+                int indiceInicio, indiceFim;
 
-    // 1. Limpar as dependências antigas (arestas de saída) no grafo
-    removeArestas(grafo, indice_u);
-
-    // 2. Armazenar a fórmula antiga para possível reversão
-    char formula_antiga[50];
-    strcpy(formula_antiga, planilha[linha_u][coluna_u].formula);
-
-    // 3. Atualizar a fórmula da célula
-    strcpy(planilha[linha_u][coluna_u].formula, formula_str);
-
-    // 4. Analisar a nova fórmula e adicionar novas dependências (arestas de saída)
-    if (formula_str[0] == '=') {
-        char ref_coord[10];
-        strcpy(ref_coord, formula_str + 1);
-        int indice_v = converteCoordenadaParaIndice(ref_coord);
-        if (indice_v != -1) {
-            adicionaAresta(grafo, indice_u, indice_v); // u depende de v (u -> v)
-        }
-    } else if (formula_str[0] == '@') {
-        char func_name[10];
-        char range_str[50];
-        int start_index, end_index;
-
-        if (sscanf(formula_str + 1, "%[^(](%[^)])", func_name, range_str) == 2) {
-            if (parseRange(range_str, &start_index, &end_index)) {
-                for (int v = start_index; v <= end_index; v++) {
-                    adicionaAresta(grafo, indice_u, v); // u depende de v (u -> v)
+                if(sscanf(formulaString + 1, "%[^(](%[^)])", nomeFuncao, intervaloString) == 2) {
+                    if (analisarIntervalo(intervaloString, &indiceInicio, &indiceFim))
+                        for(int v = indiceInicio; v <= indiceFim; v++) adicionaAresta(grafo, indice_u, v);
                 }
             }
+
+            limpaVisitados(planilha);
+            if(buscaCiclo(indice_u, planilha, grafo)){
+                removeArestas(grafo, indice_u);
+                strcpy(planilha[linha_u][coluna_u].formula, formula_antiga);
+                atualizaPlanilha(planilha, grafo); 
+                verifica = 0;
+            }
+            atualizaPlanilha(planilha, grafo);
         }
     }
-    
-    // 5. Verificar se a nova dependência cria um ciclo
-    limpaVisitados(planilha);
-    if (buscaCiclo(indice_u, planilha, grafo)) {
-        printf("ERRO: Ciclo detectado! A operação foi desfeita.\n");
-        // Desfaz a operação (limpa a fórmula e as dependências)
-        removeArestas(grafo, indice_u);
-        strcpy(planilha[linha_u][coluna_u].formula, formula_antiga);
-        
-        // Reconstroi as dependências antigas (se houver) - Simplificação: apenas recalcula
-        // Para uma reversão completa, seria necessário armazenar as dependências antigas.
-        // No entanto, como a planilha será recalculada, o valor final estará correto.
-        atualizaPlanilha(planilha, grafo); 
-        return 0;
-    }
 
-    // 6. Se não houver ciclo, recalcula a planilha
-    atualizaPlanilha(planilha, grafo);
-
-    return 1;
+    return (verifica);
 }
-
-// =================================================================================================
-// Funções de Exibição (Reutilizadas da Questão 3)
-// =================================================================================================
 
 void exibePlanilha(Celula planilha[LINHAS][COLUNAS]) {
     printf("\n================================================================================================\n");
@@ -361,9 +261,7 @@ void exibePlanilha(Celula planilha[LINHAS][COLUNAS]) {
     printf("--+--------+--------+--------+--------+--------+--------+--------+--------+\n");
     for (int i = 0; i < LINHAS; i++) {
         printf("%2d|", i + 1);
-        for (int j = 0; j < COLUNAS; j++) {
-            printf(" %6.2f |", planilha[i][j].valor);
-        }
+        for (int j = 0; j < COLUNAS; j++) printf(" %6.2f |", planilha[i][j].valor);
         printf("\n");
     }
     printf("================================================================================================\n");
