@@ -26,6 +26,9 @@ int main() {
             }else loop = 0;
         }else loop = 0;
     }
+    /* exemplo: mostrar as buscas antes de encerrar */
+    buscaEmProfundidadeGrafo(grafo, planilha);
+    buscaEmLarguraGrafo(grafo, planilha);
 
     printf("\nEncerrando o programa.\n");
     return 0;

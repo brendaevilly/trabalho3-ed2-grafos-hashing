@@ -237,3 +237,74 @@ void exibePlanilha(Celula planilha[LINHAS][COLUNAS]) {
     }
     printf("================================================================================================\n");
 }
+
+/* DFS recursiva a partir de um nó */
+void dfs_rec(int u, Celula planilha[LINHAS][COLUNAS], int grafo[NUM_CELULAS][NUM_CELULAS]) {
+    int linha = u / COLUNAS;
+    int coluna = u % COLUNAS;
+
+    if(!(planilha[linha][coluna].visitado)){
+        planilha[linha][coluna].visitado = 1;
+
+        char coord[10];
+        converteIndiceParaCoordenada(u, coord);
+        printf("Visitando: %s\n", coord);
+
+        for(int v=0; v<NUM_CELULAS; v++) if(grafo[u][v] == 1) dfs_rec(v, planilha, grafo);
+    }
+}
+
+/* Percorre todo o grafo (somente componentes com arestas de origem) em DFS */
+void buscaEmProfundidadeGrafo(int grafo[NUM_CELULAS][NUM_CELULAS], Celula planilha[LINHAS][COLUNAS]) {
+    limpaVisitados(planilha);
+    printf("\n--- BUSCA EM PROFUNDIDADE ---\n");
+
+    for(int indice=0; indice<NUM_CELULAS; indice++) {
+        int temAresta = 0;
+        for (int v = 0; v < NUM_CELULAS && temAresta == 0; v++)
+            if(grafo[indice][v] == 1) temAresta = 1;
+        if (temAresta){
+            int linha = indice / COLUNAS;
+            int coluna = indice % COLUNAS;
+            if (planilha[linha][coluna].visitado == 0) dfs_rec(indice, planilha, grafo);
+        }   
+    }
+}
+
+/* BFS que inicia em cada componente (somente origens com arestas) */
+void buscaEmLarguraGrafo(int grafo[NUM_CELULAS][NUM_CELULAS], Celula planilha[LINHAS][COLUNAS]) {
+    limpaVisitados(planilha);
+    printf("\n--- BUSCA EM LARGURA ---\n");
+
+    int fila[NUM_CELULAS];
+    for(int inicio=0; inicio<NUM_CELULAS; inicio++){
+        /* só inicia a BFS em nós que tenham arestas de saída */
+        int temAresta = 0;
+        for(int v=0; v<NUM_CELULAS && temAresta == 0; v++) 
+            if(grafo[inicio][v] == 1) temAresta = 1;
+        if(temAresta){
+            int linha_i = inicio / COLUNAS;
+            int coluna_i = inicio % COLUNAS;
+            if(!(planilha[linha_i][coluna_i].visitado)){
+                int ini = 0, fim = 0;
+                fila[fim++] = inicio;
+
+                while(ini < fim){
+                    int u = fila[ini++];
+
+                    int linha = u / COLUNAS;
+                    int coluna = u % COLUNAS;
+                    if(!(planilha[linha][coluna].visitado)){
+                        planilha[linha][coluna].visitado = 1;
+                        char coord[10];
+                        converteIndiceParaCoordenada(u, coord);
+                        printf("Visitando: %s\n", coord);
+
+                        for(int v=0; v<NUM_CELULAS; v++)
+                            if(grafo[u][v] == 1 && !planilha[v / COLUNAS][v % COLUNAS].visitado) fila[fim++] = v;
+                    }
+                }
+            }
+        }
+    }
+}

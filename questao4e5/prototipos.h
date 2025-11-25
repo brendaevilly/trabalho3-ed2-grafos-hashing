@@ -19,6 +19,7 @@ typedef struct {
     int visitado;
 } Celula;
 
+// Questão 4
 void menu();
 ListaDeAdjacencia *criaNo(int indice_destino);
 void adicionaAresta(ListaDeAdjacencia *grafo[NUM_CELULAS], int origem, int destino);
@@ -35,5 +36,9 @@ double calculaFuncao(const char *formula, int linha, int coluna, Celula planilha
 double calculaValorCelula(int linha, int coluna, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]);
 int processaEntrada(const char *entrada, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]);
 void exibePlanilha(Celula planilha[LINHAS][COLUNAS]);
+
+// Questão 5
+void buscaEmProfundidade(int inicio, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]);
+void buscaEmLargura(int inicio, Celula planilha[LINHAS][COLUNAS], ListaDeAdjacencia *grafo[NUM_CELULAS]);
 
 #endif
